@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CEM System — College Event Management</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<div id="toast-container"></div>
+
+<nav class="navbar">
+  <div class="nav-inner">
+    <div class="nav-brand">
+      <div class="logo-icon">🎓</div>
+      <h1>CEM System</h1>
+    </div>
+    <div class="nav-links">
+      <button class="nav-link active" data-page="home" onclick="Router.navigate('home')">Home</button>
+      <button class="nav-link" data-page="events" onclick="Router.navigate('events')">Events</button>
+      <button class="nav-link hidden" id="nav-dashboard" data-page="dashboard" onclick="Router.navigate('dashboard')">Dashboard</button>
+      <button class="nav-link hidden" id="nav-users" data-page="users" onclick="Router.navigate('users')">Users</button>
+      <button class="nav-link hidden" id="nav-reports" data-page="reports" onclick="Router.navigate('reports')">Reports</button>
+    </div>
+    <div class="nav-actions">
+      <div id="guest-actions" style="display:flex;gap:8px;">
+        <button class="btn btn-outline btn-sm" onclick="showAuthModal('login')">Sign In</button>
+        <button class="btn btn-primary btn-sm" onclick="showAuthModal('register')">Sign Up</button>
+      </div>
+      <div id="user-actions" class="hidden" style="display:flex;align-items:center;gap:10px;">
+        <div class="avatar" id="user-avatar">U</div>
+        <span style="font-size:0.875rem;font-weight:600;" id="user-name">User</span>
+        <button class="btn btn-outline btn-sm" onclick="handleLogout()">Logout</button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- HOME PAGE -->
+<div id="page-home" class="page active">
+  <section class="hero">
+    <div class="container">
+      <div class="hero-tag">🎓 College Event Management</div>
+      <h1>Discover & Join<br><span>Campus Events</span></h1>
+      <p>Browse upcoming events, register in seconds, and never miss out on what's happening at your college.</p>
+      <div class="hero-actions">
+        <button class="btn btn-primary btn-lg" onclick="Router.navigate('events')">🎭 Browse Events</button>
+        <button class="btn btn-outline btn-lg" onclick="showAuthModal('register')">Create Account</button>
+      </div>
+    </div>
+  </section>
+  <div class="container">
+    <div class="stats-bar">
+      <div class="stat-card"><div class="stat-value" id="stat-events">—</div><div class="stat-label">Total Events</div></div>
+      <div class="stat-card"><div class="stat-value">5+</div><div class="stat-label">Categories</div></div>
+      <div class="stat-card"><div class="stat-value">QR</div><div class="stat-label">Attendance</div></div>
+      <div class="stat-card"><div class="stat-value">Live</div><div class="stat-label">Analytics</div></div>
+    </div>
+    <div style="margin-bottom:60px;">
+      <h2 style="text-align:center;margin-bottom:32px;font-size:1.8rem;">Everything you need</h2>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px;">
+        <div class="card" style="text-align:center;padding:32px 24px;"><div style="font-size:36px;margin-bottom:12px;">🎟️</div><h3 style="font-size:1.1rem;margin-bottom:8px;">Easy Registration</h3><p style="font-size:0.875rem;color:var(--text-secondary);">Register for events with just your name and email. No account required.</p></div>
+        <div class="card" style="text-align:center;padding:32px 24px;"><div style="font-size:36px;margin-bottom:12px;">📱</div><h3 style="font-size:1.1rem;margin-bottom:8px;">QR Attendance</h3><p style="font-size:0.875rem;color:var(--text-secondary);">Get a unique QR code on registration for seamless event check-in.</p></div>
+        <div class="card" style="text-align:center;padding:32px 24px;"><div style="font-size:36px;margin-bottom:12px;">📊</div><h3 style="font-size:1.1rem;margin-bottom:8px;">Live Analytics</h3><p style="font-size:0.875rem;color:var(--text-secondary);">Organizers get real-time dashboards and detailed reports.</p></div>
+        <div class="card" style="text-align:center;padding:32px 24px;"><div style="font-size:36px;margin-bottom:12px;">🔐</div><h3 style="font-size:1.1rem;margin-bottom:8px;">Role-Based Access</h3><p style="font-size:0.875rem;color:var(--text-secondary);">Separate views for students, organizers, and admins.</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- EVENTS PAGE -->
+<div id="page-events" class="page">
+  <div class="container">
+    <div class="page-header">
+      <div class="flex justify-between items-center" style="flex-wrap:wrap;gap:12px;">
+        <div><h2>All Events</h2><p id="events-count" class="text-secondary">Loading events...</p></div>
+        <button class="btn btn-outline" onclick="Modal.open('lookup-modal')">🔍 My Registrations</button>
+      </div>
+    </div>
+    <div class="filter-bar">
+      <button class="filter-btn events-filter-btn active" onclick="setEventCategory('all',this)">All</button>
+      <button class="filter-btn events-filter-btn" onclick="setEventCategory('Academic',this)">📚 Academic</button>
+      <button class="filter-btn events-filter-btn" onclick="setEventCategory('Cultural',this)">🎭 Cultural</button>
+      <button class="filter-btn events-filter-btn" onclick="setEventCategory('Sports',this)">⚽ Sports</button>
+      <button class="filter-btn events-filter-btn" onclick="setEventCategory('Technical',this)">💻 Technical</button>
+      <button class="filter-btn events-filter-btn" onclick="setEventCategory('Workshop',this)">🛠️ Workshop</button>
+      <button class="filter-btn events-filter-btn" onclick="setEventCategory('Seminar',this)">🎤 Seminar</button>
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" placeholder="Search events..." oninput="debouncedSearch(this.value)" />
+      </div>
+    </div>
+    <div class="events-grid" id="events-list">
+      <div class="loading-state" style="grid-column:1/-1"><div class="spinner"></div><span>Loading events...</span></div>
+    </div>
+    <div class="pagination" id="events-pagination"></div>
+  </div>
+</div>
+
+<!-- DASHBOARD PAGE -->
+<div id="page-dashboard" class="page">
+  <div class="container">
+    <div class="dash-layout">
+      <aside class="sidebar">
+        <div style="margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border);">
+          <div class="flex items-center gap-2">
+            <div class="avatar" id="dash-avatar">U</div>
+            <div>
+              <div style="font-weight:600;font-size:0.875rem;" id="dash-user-name">User</div>
+              <div style="font-size:0.75rem;color:var(--text-muted);" id="dash-user-role">Role</div>
+            </div>
+          </div>
+        </div>
+        <nav class="sidebar-nav" id="dashboard-sidebar"></nav>
+      </aside>
+      <main id="dashboard-content">
+        <div class="loading-state"><div class="spinner"></div></div>
+      </main>
+    </div>
+  </div>
+</div>
+
+<!-- USERS PAGE -->
+<div id="page-users" class="page">
+  <div class="container">
+    <div class="page-header"><h2>User Management</h2><p class="text-secondary">Manage all users and their roles</p></div>
+    <div id="users-content"><div class="loading-state"><div class="spinner"></div></div></div>
+  </div>
+</div>
+
+<!-- REPORTS PAGE -->
+<div id="page-reports" class="page">
+  <div class="container">
+    <div class="page-header"><h2>Analytics & Reports</h2><p class="text-secondary">System-wide statistics and insights</p></div>
+    <div id="reports-content"><div class="loading-state"><div class="spinner"></div></div></div>
+  </div>
+</div>
+
+<!-- AUTH MODAL -->
+<div class="modal-overlay" id="auth-modal">
+  <div class="modal" style="max-width:440px;">
+    <button class="modal-close" onclick="Modal.close('auth-modal')">✕</button>
+    <div class="tabs">
+      <button class="tab-btn active" id="tab-login">Sign In</button>
+      <button class="tab-btn" id="tab-register">Create Account</button>
+    </div>
+    <div id="login-form-wrapper">
+      <form id="form-login">
+        <div class="form-group"><label class="form-label">Email Address</label><input type="email" id="login-email" class="form-control" placeholder="you@college.edu" required /></div>
+        <div class="form-group"><label class="form-label">Password</label><input type="password" id="login-password" class="form-control" placeholder="••••••••" required /></div>
+        <button type="submit" class="btn btn-primary btn-lg w-full">Sign In</button>
+        <p style="text-align:center;margin-top:14px;font-size:0.8rem;color:var(--text-muted);">Admin: admin@college.edu / Admin@123</p>
+      </form>
+    </div>
+    <div id="register-form-wrapper" class="hidden">
+      <form id="form-register">
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Full Name *</label><input type="text" id="reg-name" class="form-control" placeholder="Your name" required /></div>
+          <div class="form-group"><label class="form-label">Role *</label><select id="reg-role" class="form-control"><option value="student">Student</option><option value="organizer">Organizer</option></select></div>
+        </div>
+        <div class="form-group"><label class="form-label">Email Address *</label><input type="email" id="reg-email" class="form-control" placeholder="you@college.edu" required /></div>
+        <div class="form-group"><label class="form-label">Password *</label><input type="password" id="reg-password" class="form-control" placeholder="Min. 6 characters" required /></div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Department</label><input type="text" id="reg-department" class="form-control" placeholder="e.g. Computer Science" /></div>
+          <div class="form-group"><label class="form-label">Student ID</label><input type="text" id="reg-studentid" class="form-control" placeholder="e.g. CS2024001" /></div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-lg w-full">Create Account</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- EVENT DETAIL MODAL -->
+<div class="modal-overlay" id="event-detail-modal">
+  <div class="modal" style="max-width:640px;">
+    <button class="modal-close" onclick="Modal.close('event-detail-modal')">✕</button>
+    <div id="event-detail-body"><div class="loading-state"><div class="spinner"></div></div></div>
+  </div>
+</div>
+
+<!-- REGISTER MODAL -->
+<div class="modal-overlay" id="register-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div><h3 style="font-size:1.3rem;">🎟️ Register for Event</h3><p class="text-secondary" style="font-size:0.875rem;margin-top:4px;" id="reg-event-title">Event Name</p></div>
+      <button class="modal-close" onclick="Modal.close('register-modal')">✕</button>
+    </div>
+    <form id="event-registration-form" onsubmit="handleEventRegistration(event)">
+      <input type="hidden" id="reg-event-id" />
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Full Name *</label><input type="text" id="reg-student-name" class="form-control" placeholder="Your full name" required /></div>
+        <div class="form-group"><label class="form-label">Email Address *</label><input type="email" id="reg-student-email" class="form-control" placeholder="your@email.com" required /></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Phone Number</label><input type="tel" id="reg-student-phone" class="form-control" placeholder="+91 XXXXX XXXXX" /></div>
+        <div class="form-group"><label class="form-label">Department</label><input type="text" id="reg-student-dept" class="form-control" placeholder="e.g. Computer Science" /></div>
+      </div>
+      <div class="form-group"><label class="form-label">Student ID</label><input type="text" id="reg-student-id" class="form-control" placeholder="e.g. CS2024001" /></div>
+      <div style="background:var(--indigo-pale);border:1px solid rgba(79,70,229,0.3);border-radius:var(--radius-sm);padding:12px;margin-bottom:20px;font-size:0.82rem;color:var(--text-secondary);">
+        ℹ️ A QR code will be generated for attendance tracking. Save it after registration.
+      </div>
+      <button type="submit" class="btn btn-gold btn-lg w-full">Complete Registration →</button>
+    </form>
+  </div>
+</div>
+
+<!-- SUCCESS MODAL -->
+<div class="modal-overlay" id="success-modal">
+  <div class="modal" style="max-width:520px;">
+    <button class="modal-close" onclick="Modal.close('success-modal')">✕</button>
+    <div id="success-body"></div>
+  </div>
+</div>
+
+<!-- LOOKUP MODAL -->
+<div class="modal-overlay" id="lookup-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 style="font-size:1.3rem;">🔍 My Registrations</h3>
+      <button class="modal-close" onclick="Modal.close('lookup-modal')">✕</button>
+    </div>
+    <div class="form-group"><label class="form-label">Enter your Email Address</label><input type="email" id="lookup-email" class="form-control" placeholder="your@email.com" /></div>
+    <button class="btn btn-primary w-full mb-6" onclick="lookupMyRegistrations()">Look Up Registrations</button>
+    <div id="my-registrations-list"></div>
+  </div>
+</div>
+
+<footer style="border-top:1px solid var(--border);margin-top:60px;padding:32px 0;text-align:center;">
+  <div class="container">
+    <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:10px;">
+      <div class="logo-icon" style="width:28px;height:28px;font-size:14px;">🎓</div>
+      <span style="font-weight:600;">CEM System</span>
+    </div>
+    <p style="font-size:0.8rem;color:var(--text-muted);">College Event Management System</p>
+  </div>
+</footer>
+
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/events.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="js/users.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    updateNavbar();
+    loadHomeStats();
+  });
+</script>
+</body>
+</html>
